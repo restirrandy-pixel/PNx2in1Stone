@@ -1,372 +1,415 @@
-```react
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   ShoppingBag, Search, ShieldCheck, Heart, Trash2, Plus, Edit3, 
   Settings, CheckCircle, ChevronRight, Menu, X, Star, Truck, 
-  ArrowLeft, CreditCard, RefreshCw, Layout, Package, ShoppingCart, 
-  DollarSign, Sliders, Eye, AlertCircle, Sparkles, Image as ImageIcon,
-  Globe, Download, Copy, ExternalLink, HelpCircle, FileCode, Check,
-  User, UserCheck, ShieldAlert, LogIn, LogOut, UserPlus, Tag, Percent,
-  Wallet, ArrowUpRight, ArrowDownLeft, Clock, FileText, Upload, CheckCircle2, XCircle
+  ArrowLeft, CreditCard, RefreshCw, Layout, Package, 
+  ShoppingCart, DollarSign, Sliders, Eye, AlertCircle, Sparkles, 
+  Image as ImageIcon, Globe, Download, Copy, ExternalLink, 
+  HelpCircle, FileCode, Check, User, UserCheck, ShieldAlert, LogIn, 
+  LogOut, UserPlus, Tag, Percent, Wallet, ArrowUpRight, 
+  ArrowDownLeft, Clock, FileText, Upload, CheckCircle2, XCircle, Users 
 } from 'lucide-react';
 
-// ตั้งค่าเริ่มต้นของร้านค้า (ภาษาไทยทั้งหมด)
 const INITIAL_SHOP_CONFIG = {
   storeName: "NIAOKAI เพ็ทสโตร์",
   logoSubtitle: "อาหารและอุปกรณ์แมวเกรดพรีเมียม",
   announcementText: "🎉 ฉลองเปิดร้านใหม่! ใช้โค้ดส่วนลด 'CATLOVE15' ลด 15% + จัดส่งฟรีทั่วไทยเมื่อช้อปครบ 899 บาท 🐾",
   bannerTitle: "โภชนาการเกรดพรีเมียม เพื่อสุขภาพแมวที่คุณรัก",
-  bannerSubtitle: "คัดสรรวัตถุดิบคุณภาพสูง นำเข้าจากแหล่งมาตรฐานสากล อุดมด้วยโปรตีนสูง อร่อย ปลอดภัย ไร้สารกันบูด",
-  bannerImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=1200",
-  bannerBadge: "สินค้าขายดีอันดับ 1 ประจำปี 2026"
+  bannerSubtitle: "คัดสรรวัตถุดิบคุณภาพสูง นำเข้าจากแหล่งมาตรฐานสากล อุดมด้วยโปรตีนสูง กลิ่นหอมไร้สารกันบูด",
+  kbankAccount: "211-3-19552-8",
+  accountName: "ธนโชติ",
+  truemoneyFee: 2.90
 };
-
-// ข้อมูลผู้ใช้เริ่มต้นในระบบ
-const INITIAL_USERS = [
-  {
-    id: "U-001",
-    name: "คุณเจ้าของร้าน (Admin Owner)",
-    email: "admin@niaokai.com",
-    role: "ADMIN", // ADMIN | VIP | USER
-    walletBalance: 5000,
-    avatar: "👑"
-  },
-  {
-    id: "U-002",
-    name: "สมชาย รักสัตว์ (ลูกค้า VIP)",
-    email: "somchai@gmail.com",
-    role: "VIP",
-    walletBalance: 1200,
-    avatar: "🐱"
-  },
-  {
-    id: "U-003",
-    name: "สายใจ ทาสแมว (ลูกค้าทั่วไป)",
-    email: "saijai@gmail.com",
-    role: "USER",
-    walletBalance: 150,
-    avatar: "🐾"
-  }
-];
 
 const INITIAL_PRODUCTS = [
   {
-    id: "95",
-    name: "NIAOKAI อาหารแมวพรีเมียมสูตรปลาแซลมอน & ไก่ฟรีซไดรฟ์ 1.5 kg",
+    id: 1,
+    name: "อาหารแมวเกรดโฮลิสติก สูตรปลาแซลมอนและมันหวาน (1.5kg)",
     category: "อาหารแมว",
     price: 490,
-    originalPrice: 650,
+    vipPrice: 416.5,
+    originalPrice: 590,
     stock: 45,
     rating: 4.9,
     reviewsCount: 128,
-    isPopular: true,
-    badge: "ขายดีอันดับ 1",
     image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&q=80&w=600",
-    images: [
-      "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&q=80&w=600"
-    ],
-    variants: ["รสปลาแซลมอน (Salmon)", "รสไก่และเป็ด (Chicken & Duck)", "รสปลาทูและกุ้ง (Mackerel & Shrimp)"],
-    sizes: ["1.5 kg", "3.0 kg (คุ้มกว่า)", "8.0 kg (กระสอบใหญ่)"],
-    description: "อาหารแมวโภชนาการสมบูรณ์แบบ อุดมด้วยส่วนผสมเกรดพรีเมียม ปราศจากธัญพืช (Grain-Free) ลดโอกาสการแพ้ เสริมด้วยชิ้นเนื้อฟรีซไดรฟ์แท้ 100% บำรุงขนและผิวหนังด้วยโอเมก้า 3 และ 6",
-    ingredients: "เนื้อปลาแซลมอนนอร์เวย์, เนื้อไก่ถอดกระดูก, ไก่ฟรีซไดรฟ์, น้ำมันปลาแซลมอน, ทอรีน, วิตามินอี, แร่ธาตุรวม, พรีไบโอติกส์",
-    feedingGuide: "แมวหนัก 2-3 kg: 35-50g / วัน | แมวหนัก 3-5 kg: 50-70g / วัน | ควรมีน้ำสะอาดวางไว้ให้แมวตลอดเวลา"
+    badge: "ขายดีอันดับ 1",
+    description: "บำรุงขนสวยเงางาม ลดปัญหาขนร่วง อุดมด้วย Omega-3 และ 6 จากปลาแซลมอนแท้"
   },
   {
-    id: "96",
-    name: "ขนมแมวเลีย Niaokai Creamy Treats รวมรสชาติโภชนาการ (แพ็ค 20 ซอง)",
-    category: "ขนมแมว",
-    price: 189,
-    originalPrice: 250,
+    id: 2,
+    name: "ทรายแมวภูเขาไฟไร้ฝุ่น 99.9% กลิ่นลาเวนเดอร์ (10L)",
+    category: "ทรายแมว",
+    price: 290,
+    vipPrice: 246.5,
+    originalPrice: 350,
     stock: 80,
     rating: 4.8,
-    reviewsCount: 94,
-    isPopular: true,
-    badge: "ฮิตในทาสแมว",
-    image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=600",
-    images: [
-      "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?auto=format&fit=crop&q=80&w=600"
-    ],
-    variants: ["รสปลาทูน่า & หอยเชลล์", "รสไก่ & นมแพะ", "รสแซลมอน & ชาเขียว"],
-    sizes: ["แพ็ค 20 ซอง", "แพ็ค 50 ซองสุดคุ้ม"],
-    description: "ขนมแมวเลียเนื้อเนียนละเอียด ปราศจากสารกันบูดและเกลือปนเปื้อน เสริมทอรีนช่วยบำรุงสายตาและหัวใจ ทานง่าย เหมาะสำหรับรางวัลหรือผสมอาหารเม็ด",
-    ingredients: "เนื้อทูน่า 85%, สกัดจากชาเขียว, ทอรีน, วิตามินซี, วิตามินอี",
-    feedingGuide: "ให้เป็นขนมทานเล่นไม่เกิน 2-3 ซองต่อวัน ไม่ควรใช้แทนอาหารหลัก"
-  },
-  {
-    id: "97",
-    name: "ทรายแมวภูเขาไฟไร้ฝุ่น Niaokai Odor Control Clean 10L",
-    category: "ทรายแมว",
-    price: 260,
-    originalPrice: 320,
-    stock: 35,
-    rating: 4.9,
-    reviewsCount: 210,
-    isPopular: false,
-    badge: "เก็บกลิ่น 100%",
-    image: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&q=80&w=600",
-    images: [
-      "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&q=80&w=600"
-    ],
-    variants: ["กลิ่นแป้งเด็ก (Baby Powder)", "กลิ่นกาแฟ (Coffee)", "กลิ่นธรรมชาติ (Unscented)"],
-    sizes: ["10 Liters", "20 Liters Duo Pack"],
-    description: "ทรายแมวโซเดียมเบนโทไนท์เกรดพรีเมียม จับตัวเป็นก้อนรวดเร็วภายใน 3 วินาที ไร้ฝุ่น 99.9% เหมาะสำหรับผู้แพ้ง่ายและระบบหายใจของแมว",
-    ingredients: "Natural Sodium Bentonite Clay, Activated Carbon Spheres",
-    feedingGuide: "เททรายแมวลงในกะบะทรายให้หนาประมาณ 7-10 ซม. ตักก้อนที่จับตัวออกตักทิ้งทุกวัน"
-  },
-  {
-    id: "98",
-    name: "ที่ฝนเล็บแมวทรงโซฟา Luxury Cat Scratcher Lounge",
-    category: "อุปกรณ์เลี้ยงแมว",
-    price: 390,
-    originalPrice: 590,
-    stock: 12,
-    rating: 4.7,
-    reviewsCount: 45,
-    isPopular: false,
-    badge: "ดีไซน์สวยงาม",
-    image: "https://images.unsplash.com/photo-1545249390-6bdfa286032f?auto=format&fit=crop&q=80&w=600",
-    images: [
-      "https://images.unsplash.com/photo-1545249390-6bdfa286032f?auto=format&fit=crop&q=80&w=600"
-    ],
-    variants: ["สีไม้อบอุ่น (Warm Wood)", "สีมินิมอลเทา (Slate Grey)"],
-    sizes: ["ขนาดกลาง Medium (45cm)", "ขนาดใหญ่ Large (60cm)"],
-    description: "ที่ข่วนเล็บกระดาษลูกฟูกหนาแน่นพิเศษ แข็งแรง ทนทาน รองรับน้ำหนักแมวได้ถึง 10 กก. ผลิตจากวัสดุรีไซเคิลเป็นมิตรต่อสิ่งแวดล้อม",
-    ingredients: "High-density Corrugated Cardboard, Non-toxic Corn Starch Glue",
-    feedingGuide: "วางไว้ในบริเวณที่น้องแมวชอบพักผ่อน โรยผงแคตนิปเพื่อดึงดูดความสนใจ"
+    reviewsCount: 95,
+    image: "https://images.unsplash.com/photo-1615751072497-5f5169febe17?auto=format&fit=crop&q=80&w=600",
+    badge: "ไร้ฝุ่น 100%",
+    description: "จับตัวเป็นก้อนไวภายใน 3 วินาที ตักง่าย เก็บกลิ่นดีเยี่ยม"
   }
 ];
-
-const INITIAL_TOPUP_REQUESTS = [
-  {
-    id: "TOP-9001",
-    userId: "U-002",
-    userName: "สมชาย รักสัตว์ (ลูกค้า VIP)",
-    amount: 500,
-    slipImage: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=400",
-    status: "APPROVED", // PENDING | APPROVED | REJECTED
-    date: "2026-11-09 10:30"
-  },
-  {
-    id: "TOP-9002",
-    userId: "U-003",
-    userName: "สายใจ ทาสแมว (ลูกค้าทั่วไป)",
-    amount: 300,
-    slipImage: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=400",
-    status: "PENDING",
-    date: "2026-11-09 11:15"
-  }
-];
-
-const CATEGORIES = ["ทั้งหมด", "อาหารแมว", "ขนมแมว", "อุปกรณ์เลี้ยงแมว", "ทรายแมว"];
 
 export default function App() {
   const [shopConfig, setShopConfig] = useState(INITIAL_SHOP_CONFIG);
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
-  const [users, setUsers] = useState(INITIAL_USERS);
-  const [topupRequests, setTopupRequests] = useState(INITIAL_TOPUP_REQUESTS);
   
-  // ผู้ใช้ปัจจุบันที่ล็อกอิน (เริ่มต้นให้เป็น Admin Owner)
-  const [currentUser, setCurrentUser] = useState(INITIAL_USERS[0]);
-  
-  const [activeTab, setActiveTab] = useState("storefront"); // storefront | admin | deploy
-  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  const [cart, setCart] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
-
-  const [orders, setOrders] = useState([
-    {
-      id: "ORD-2026-901",
-      customer: "สมชาย ใจดี",
-      total: 679,
-      status: "จัดส่งแล้ว",
-      date: "2026-11-08",
-      items: ["NIAOKAI อาหารแมวพรีเมียม x 1", "ขนมแมวเลีย x 1"]
-    }
+  // ฐานข้อมูลผู้ใช้ในระบบ
+  const [usersList, setUsersList] = useState([
+    { id: 1, name: "สมชาย รักสัตว์", username: "somchai", role: "vip", walletBalance: 1200 },
+    { id: 2, name: "สายใจ ทาสแมว", username: "saijai", role: "member", walletBalance: 150 }
   ]);
-  const [toastMessage, setToastMessage] = useState(null);
 
-  // Variant & Quantity State for Detail View
-  const [selectedVariant, setSelectedVariant] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [user, setUser] = useState(null); 
+  const [activeTab, setActiveTab] = useState("storefront");
+  
+  // Auth Modal States
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
+  const [authUsername, setAuthUsername] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
+  // Wallet Topup States
+  const [topupAmount, setTopupAmount] = useState("");
+  const [slipImage, setSlipImage] = useState(null);
+  const [slipFileName, setSlipFileName] = useState("");
+  const [topupHistory, setTopupHistory] = useState([]);
 
-  // คำนวณส่วนลดตามบทบาท (VIP ได้รับส่วนลด 15%)
-  const isVip = currentUser?.role === "VIP";
-  const calculateEffectivePrice = (originalPrice) => {
-    if (isVip) {
-      return Math.round(originalPrice * 0.85); // ส่วนลด 15%
-    }
-    return originalPrice;
-  };
+  // ระบบตรวจเช็กล็อกอิน
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    if (!authUsername || !authPassword) return alert("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
 
-  const currentProduct = products.find(p => p.id === selectedProductId);
-
-  useEffect(() => {
-    if (currentProduct) {
-      if (currentProduct.variants && currentProduct.variants.length > 0) {
-        setSelectedVariant(currentProduct.variants[0]);
-      }
-      if (currentProduct.sizes && currentProduct.sizes.length > 0) {
-        setSelectedSize(currentProduct.sizes[0]);
-      }
-      setQuantity(1);
-    }
-  }, [selectedProductId]);
-
-  // ฟังก์ชั่นตัดยอดเงิน Wallet เมื่อซื้อสินค้า
-  const deductUserWallet = (amount) => {
-    if (!currentUser) return false;
-    if (currentUser.walletBalance < amount) return false;
-
-    const newBalance = currentUser.walletBalance - amount;
-    const updatedUser = { ...currentUser, walletBalance: newBalance };
-    setCurrentUser(updatedUser);
-    setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
-    return true;
-  };
-
-  const addToCart = (product, qty = 1, variant = null, size = null) => {
-    const itemVariant = variant || (product.variants ? product.variants[0] : "");
-    const itemSize = size || (product.sizes ? product.sizes[0] : "");
-    const cartItemId = `${product.id}-${itemVariant}-${itemSize}`;
+    // เช็กสิทธิ์ Admin เจ้าของร้าน (ต้องตรงทั้ง Username และ Password)
+    if (authUsername === "Jelenakub" && authPassword === "Jelenakub") {
+      const adminUser = {
+        id: 999,
+        name: "เจ้าของร้าน (Super Admin)",
+        username: "Jelenakub",
+        role: "admin",
+        walletBalance: 99999
+      };
+      setUser(adminUser);
+      setIsAuthModalOpen(false);
+      setAuthUsername("");
+      setAuthPassword("");
+      alert("ยินดีต้อนรับท่านเจ้าของร้าน (Super Admin) เข้าสู่ระบบ!");
+      return;
+    } 
     
-    // คำนวณราคาตามสิทธิ์ผู้ใช้
-    const finalPrice = calculateEffectivePrice(product.price);
+    // ป้องกันคนอื่นใช้ชื่อ Jelenakub แต่รหัสผิด
+    if (authUsername === "Jelenakub" && authPassword !== "Jelenakub") {
+      alert("รหัสผ่านเจ้าของร้านไม่ถูกต้อง!");
+      return;
+    }
 
-    setCart(prev => {
-      const existing = prev.find(item => item.cartItemId === cartItemId);
-      if (existing) {
-        return prev.map(item => 
-          item.cartItemId === cartItemId 
-            ? { ...item, quantity: item.quantity + qty }
-            : item
-        );
+    // ล็อกอินสมาชิกทั่วไป
+    const found = usersList.find(u => u.username.toLowerCase() === authUsername.toLowerCase());
+    if (found) {
+      setUser(found);
+      setIsAuthModalOpen(false);
+      setAuthUsername("");
+      setAuthPassword("");
+      alert(`ยินดีต้อนรับคุณ ${found.name} เข้าสู่ระบบ`);
+    } else {
+      alert("ไม่พบชื่อผู้ใช้นี้ในระบบ กรุณาตรวจสอบอีกครั้งหรือกดสมัครสมาชิก");
+    }
+  };
+
+  // สมัครสมาชิกใหม่ (ได้สิทธิ์ member ทั่วไปเสมอ)
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    if (!authName || !authUsername || !authPassword) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+
+    if (authUsername.toLowerCase() === "jelenakub") {
+      alert("ไม่สามารถใช้ชื่อผู้ใช้นี้ได้");
+      return;
+    }
+
+    const newUser = {
+      id: Date.now(),
+      name: authName,
+      username: authUsername,
+      role: "member", // สมาชิกใหม่เป็น Member ทั่วไป (แอดมินปรับ VIP ให้ทีหลัง)
+      walletBalance: 0
+    };
+
+    setUsersList([...usersList, newUser]);
+    setUser(newUser);
+    setIsAuthModalOpen(false);
+    setAuthName("");
+    setAuthUsername("");
+    setAuthPassword("");
+    alert("สมัครสมาชิกสำเร็จ! บัญชีของคุณพร้อมใช้งานแล้ว");
+  };
+
+  // สลับสิทธิ์ VIP โดยแอดมิน
+  const toggleUserRole = (userId) => {
+    const updated = usersList.map(u => {
+      if (u.id === userId) {
+        return { ...u, role: u.role === 'vip' ? 'member' : 'vip' };
       }
-      return [...prev, {
-        ...product,
-        price: finalPrice, // ใช้ราคาที่คำนวณสิทธิ์ VIP
-        basePrice: product.price,
-        cartItemId,
-        selectedVariant: itemVariant,
-        selectedSize: itemSize,
-        quantity: qty
-      }];
+      return u;
     });
-
-    showToast(`เพิ่ม "${product.name.slice(0, 20)}..." ลงตะกร้าแล้ว!`);
+    setUsersList(updated);
   };
 
-  const removeFromCart = (cartItemId) => {
-    setCart(prev => prev.filter(item => item.cartItemId !== cartItemId));
+  // แนบสลิปเติมเงินอัตโนมัติ
+  const handleSlipChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSlipFileName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => setSlipImage(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
-  const updateCartQuantity = (cartItemId, delta) => {
-    setCart(prev => prev.map(item => {
-      if (item.cartItemId === cartItemId) {
-        const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : item;
-      }
-      return item;
-    }));
+  const handleAutoTopup = (e) => {
+    e.preventDefault();
+    const amount = parseFloat(topupAmount);
+    if (!user) return alert("กรุณาเข้าสู่ระบบก่อนเติมเงิน"), setIsAuthModalOpen(true);
+    if (!amount || amount <= 0) return alert("กรุณากรอกจำนวนเงินให้ถูกต้อง");
+    if (!slipImage) return alert("กรุณาแนบสลิปโอนเงิน");
+
+    const updatedBalance = user.walletBalance + amount;
+    setUser({ ...user, walletBalance: updatedBalance });
+
+    const newTxn = {
+      id: `TXN-${Date.now()}`,
+      amount,
+      date: new Date().toLocaleString('th-TH'),
+      status: "สำเร็จ (อัตโนมัติ)"
+    };
+    setTopupHistory([newTxn, ...topupHistory]);
+    setTopupAmount("");
+    setSlipImage(null);
+    setSlipFileName("");
+    alert(`เติมเงินสำเร็จ ฿${amount.toLocaleString()} เข้ากระเป๋าเรียบร้อยแล้ว!`);
   };
-
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === "ทั้งหมด" || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col selection:bg-amber-500 selection:text-white">
-      
-      {/* แจ้งเตือน Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700 animate-bounce">
-          <Sparkles className="w-5 h-5 text-amber-400" />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
-
-      {/* แถบประกาศด้านบนสุด */}
-      <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs md:text-sm py-2 px-4 text-center font-medium shadow-inner flex justify-between items-center">
-        <div className="flex-1 text-center truncate">
-          {shopConfig.announcementText}
-        </div>
-        <div className="flex items-center space-x-2 ml-2 shrink-0">
-          <button 
-            onClick={() => setActiveTab(activeTab === "storefront" ? "admin" : "storefront")}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold transition flex items-center space-x-1 border border-white/30"
-          >
-            {activeTab === "storefront" ? (
-              <>
-                <Settings className="w-3.5 h-3.5" />
-                <span>เข้าสู่หลังบ้าน (CMS)</span>
-              </>
-            ) : (
-              <>
-                <Eye className="w-3.5 h-3.5" />
-                <span>ดูหน้าร้านค้า (Storefront)</span>
-              </>
-            )}
-          </button>
-          
-          <button
-            onClick={() => setActiveTab("deploy")}
-            className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1 rounded-full text-xs font-black transition flex items-center space-x-1 shadow-md"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>เปิดขึ้นออนไลน์ 🚀</span>
-          </button>
-        </div>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+      <div className="bg-orange-500 text-white text-xs md:text-sm py-2 px-4 text-center font-medium">
+        <span>{shopConfig.announcementText}</span>
       </div>
 
-      {/* แถบเมนูด้านบน (Header) */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
-            
-            {/* โลโก้ร้านค้า */}
-            <div 
-              className="flex items-center space-x-3 cursor-pointer group shrink-0"
-              onClick={() => { setSelectedProductId(null); setActiveTab("storefront"); }}
-            >
-              <div className="w-11 h-11 bg-gradient-to-tr from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition transform">
-                <span className="text-2xl font-black text-white">🐾</span>
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("storefront")}>
+            <div className="w-12 h-12 bg-gradient-to-tr from-orange-500 to-amber-400 rounded-2xl flex items-center justify-center text-white shadow-md">
+              <ShoppingBag className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                {shopConfig.storeName}
+              </h1>
+              <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
+                {shopConfig.logoSubtitle}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setActiveTab("wallet")}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span className="text-xs font-bold">฿{user.walletBalance.toLocaleString()}</span>
+                </button>
+
+                {/* ปุ่มแอดมินแสดงเฉพาะบัญชี Jelenakub */}
+                {user.role === 'admin' && (
+                  <button 
+                    onClick={() => setActiveTab("admin")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 ${
+                      activeTab === 'admin' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    หลังบ้านแอดมิน
+                  </button>
+                )}
+
+                <button onClick={() => { setUser(null); setActiveTab("storefront"); }} className="p-2 text-slate-400 hover:text-rose-600" title="ออกจากระบบ">
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-              <div>
-                <h1 className="text-xl font-black bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-tight tracking-tight">
-                  {shopConfig.storeName}
-                </h1>
-                <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
-                  {shopConfig.logoSubtitle}
-                </p>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button onClick={() => { setAuthMode("login"); setIsAuthModalOpen(true); }} className="px-4 py-2 text-xs font-bold text-slate-700">เข้าสู่ระบบ</button>
+                <button onClick={() => { setAuthMode("register"); setIsAuthModalOpen(true); }} className="px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-bold">สมัครสมาชิก</button>
               </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* หน้าร้านค้า */}
+        {activeTab === "storefront" && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-8 text-white shadow-xl">
+              <h2 className="text-3xl font-extrabold">{shopConfig.bannerTitle}</h2>
+              <p className="text-orange-100 text-sm mt-2">{shopConfig.bannerSubtitle}</p>
+              {user && (
+                <div className="mt-4 inline-block bg-white/25 px-3 py-1 rounded-full text-xs font-bold">
+                  สถานะของคุณ: {user.role === 'vip' ? '⭐ สมาชิก VIP (ลด 15%)' : user.role === 'admin' ? '👑 เจ้าของร้าน (Super Admin)' : '👤 สมาชิกทั่วไป'}
+                </div>
+              )}
             </div>
 
-            {/* ช่องค้นหาสินค้า */}
-            {activeTab === "storefront" && (
-              <div className="hidden md:flex flex-1 max-w-md relative">
-                <input
-                  type="text"
-                  placeholder="ค้นหาสินค้า เช่น อาหารแมว, ขนมเลีย, ทรายแมว..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100/
-```
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <div key={product.id} className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm p-5 space-y-3">
+                  <img src={product.image} alt={product.name} className="w-full h-48 object-cover rounded-xl" />
+                  <h3 className="font-bold text-slate-800">{product.name}</h3>
+                  <div className="flex items-baseline justify-between pt-2">
+                    <div>
+                      <span className="text-lg font-extrabold text-orange-600">
+                        ฿{user?.role === 'vip' ? product.vipPrice : product.price}
+                      </span>
+                      {user?.role === 'vip' && <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">ราคา VIP</span>}
+                    </div>
+                    <button className="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-xl">สั่งซื้อ</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* หน้ากระเป๋าตังค์และเติมเงิน */}
+        {activeTab === "wallet" && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-3xl shadow-xl flex justify-between items-center">
+              <div>
+                <p className="text-xs text-emerald-100">ยอดเงินคงเหลือ</p>
+                <h2 className="text-4xl font-extrabold mt-1">฿{user?.walletBalance.toLocaleString()}</h2>
+                <p className="text-xs text-emerald-200 mt-2">ผู้ใช้งาน: {user?.name}</p>
+              </div>
+              <Wallet className="w-16 h-16 text-white/20" />
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-emerald-600" /> เติมเงินเข้ากระเป๋า (อัตโนมัติ)
+              </h3>
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1 text-sm">
+                <p className="text-xs font-bold text-slate-500">โอนผ่านบัญชีตรง</p>
+                <div className="font-bold text-slate-700">ธนาคารกสิกรไทย (KBank)</div>
+                <div className="text-base font-extrabold text-emerald-600">{shopConfig.kbankAccount}</div>
+                <div className="text-xs text-slate-600">ชื่อบัญชี: <span className="font-bold">{shopConfig.accountName}</span></div>
+              </div>
+
+              <form onSubmit={handleAutoTopup} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">จำนวนเงิน (บาท)</label>
+                  <input type="number" required placeholder="เช่น 300" value={topupAmount} onChange={(e) => setTopupAmount(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">แนบสลิปโอนเงิน</label>
+                  <input type="file" accept="image/*" required onChange={handleSlipChange} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-emerald-50 file:text-emerald-700 cursor-pointer" />
+                </div>
+                {slipImage && <img src={slipImage} alt="Slip" className="w-28 h-36 object-cover rounded-xl border" />}
+                <button type="submit" className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl text-sm">ยืนยันเติมเงิน</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* หน้าหลังบ้านเฉพาะเจ้าของร้าน (Jelenakub) */}
+        {activeTab === "admin" && user?.role === 'admin' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 text-white p-6 rounded-3xl flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">แผงควบคุมหลัก (Super Admin)</h2>
+                <p className="text-xs text-slate-400 mt-1">ยินดีต้อนรับคุณ Jelenakub - จัดการสิทธิ์ VIP และควบคุมระบบ</p>
+              </div>
+              <Users className="w-10 h-10 text-orange-500" />
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+              <h3 className="font-bold text-base text-slate-800">รายชื่อสมาชิกในระบบ</h3>
+              <div className="space-y-3">
+                {usersList.map((u) => (
+                  <div key={u.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-800">{u.name}</h4>
+                      <p className="text-xs text-slate-500">Username: {u.username}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${u.role === 'vip' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'}`}>
+                        {u.role === 'vip' ? '⭐ VIP Member' : '👤 สมาชิกทั่วไป'}
+                      </span>
+                      <button 
+                        onClick={() => toggleUserRole(u.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                          u.role === 'vip' ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-orange-500 text-white hover:bg-orange-600'
+                        }`}
+                      >
+                        {u.role === 'vip' ? 'ถอดสิทธิ์ VIP' : 'ให้สิทธิ์ VIP'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* Auth Modal */}
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onClick={() => setIsAuthModalOpen(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-slate-800">{authMode === "login" ? "เข้าสู่ระบบ" : "สมัครสมาชิกใหม่"}</h3>
+            </div>
+            {authMode === "login" ? (
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">ชื่อผู้ใช้ (Username)</label>
+                  <input type="text" required placeholder="กรอกชื่อผู้ใช้" value={authUsername} onChange={(e) => setAuthUsername(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">รหัสผ่าน (Password)</label>
+                  <input type="password" required placeholder="กรอกรหัสผ่าน" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                </div>
+                <button type="submit" className="w-full py-3 bg-orange-500 text-white font-bold rounded-xl text-sm">เข้าสู่ระบบ</button>
+              </form>
+            ) : (
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">ชื่อ-นามสกุล</label>
+                  <input type="text" required placeholder="สมชาย รักสัตว์" value={authName} onChange={(e) => setAuthName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">ตั้งชื่อผู้ใช้ (Username)</label>
+                  <input type="text" required placeholder="somchai123" value={authUsername} onChange={(e) => setAuthUsername(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">ตั้งรหัสผ่าน (Password)</label>
+                  <input type="password" required placeholder="••••••••" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                </div>
+                <button type="submit" className="w-full py-3 bg-orange-500 text-white font-bold rounded-xl text-sm">สมัครสมาชิก</button>
+              </form>
+            )}
+
+            <div className="mt-4 text-center text-xs text-slate-500 border-t border-slate-100 pt-3">
+              {authMode === "login" ? (
+                <p>ยังไม่มีบัญชี? <button onClick={() => setAuthMode("register")} className="font-bold text-orange-600 hover:underline">สมัครสมาชิก</button></p>
+              ) : (
+                <p>มีบัญชีแล้ว? <button onClick={() => setAuthMode("login")} className="font
+        
